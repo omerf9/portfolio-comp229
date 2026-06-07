@@ -5,8 +5,25 @@
 
 /* Hero */
 .hero {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
   padding: 6rem 0 4rem;
-  max-width: 720px;
+}
+
+.hero__text {
+  flex: 1;
+}
+
+.hero__photo {
+  flex-shrink: 0;
+}
+
+.hero__photo img {
+  width: 320px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .hero__title {

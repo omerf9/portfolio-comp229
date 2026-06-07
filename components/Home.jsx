@@ -2,12 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../src/index.css';
 import './Home.css';
+import meImg from '../src/assets/me.png';
 
 /**
- * Home
- * Landing page with a welcome message, mission statement,
- * and quick navigation buttons to other key pages.
- */
+ * Home Page*/
 export default function Home() {
   return (
     <main className="home">
@@ -16,18 +14,28 @@ export default function Home() {
         {/* Hero Section */}
         <section className="hero">
 
-          <h1 className="hero__title">
-            Hi, I'm Omer Yousif
-          </h1>
+          {/* Left side intro text */}
+          <div className="hero__text">
+            <h1 className="hero__title">
+              Hi, I'm Omer Yousif
+            </h1>
 
-          <p className="hero__intro">
-            I'm a software engineering student at Centennial College. I'm learning to build web applications and exploring the AI world. This portfolio is where I share my projects, skills, and journey in tech. Feel free to explore and connect!</p>
+            <p className="hero__intro">
+              I'm a software engineering student at Centennial College. I'm learning to build web applications and exploring the AI world. This portfolio is where I share my projects, skills, and journey in tech. Feel free to explore and connect!
+            </p>
 
-          {/* CTA buttons linking to About and Projects pages */}
-          <div className="hero__actions">
-            <Link to="/about" className="btn">About Me</Link>
-            <Link to="/projects" className="btn btn-outline">View Projects</Link>
+            {/* CTA buttons linking to About and Projects pages */}
+            <div className="hero__actions">
+              <Link to="/about" className="btn">About Me</Link>
+              <Link to="/projects" className="btn btn-outline">View Projects</Link>
+            </div>
           </div>
+
+          {/* Right side photo */}
+          <div className="hero__photo">
+            <img src={meImg} alt="Omer Yousif" />
+          </div>
+
         </section>
 
         {/*  Nav shortcuts  */}
