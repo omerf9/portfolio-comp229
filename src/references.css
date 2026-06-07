@@ -1,0 +1,19 @@
+/*References page*/
+.references-content {
+  max-width: 600px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+}
+
+.references-text {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+}
+
+.references-content .btn {
+  margin-top: 0.5rem;
+}
