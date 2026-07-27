@@ -5,7 +5,7 @@ import './Layout.css';
 /**
  * Layout
  * Persistent navigation bar that appears on every page.
- * Includes my initials and links to all 6 pages.
+ * Includes my initials and links to all 7 pages.
  * Highlights the active page and collapses into a hamburger menu on mobile.
  */
 export default function Layout() {
@@ -19,6 +19,7 @@ export default function Layout() {
     { to: '/services',   label: 'Services'   },
     { to: '/references', label: 'References' },
     { to: '/contact',    label: 'Contact'    },
+    { to: '/admin',       label: 'Admin'      },
   ];
 
   return (

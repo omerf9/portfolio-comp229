@@ -1,95 +1,88 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../src/index.css';
 import './project.css';
-import agentbaseImg from './assets/agentbase.png';
-import codeatlasImg from './assets/codeatlas.png';
-import hooklabImg from './assets/hooklab.png';
+import { API_URL } from './api/config';
 
 /**
- * Projects
+ * Projects public page.
+ * Fetches all projects from the backend API instead of hardcoded data.
  */
 export default function Projects() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Project data 
- const projects = [
-    {
-      id: 1,
-      title: 'AgentBase',
-      description:
-        'An AI agent platform serving 5 industries with automated lead qualification and scoring. Built with a FastAPI backend and React frontend, using n8n for automation workflows and Supabase for data management.',
-      role: 'Solo developer built the full stack, from the API to the React frontend, and deployed it on Vercel.',
-      tech: ['Python', 'FastAPI', 'React', 'OpenAI', 'Supabase', 'n8n'],
-      date: '2025',
-      link: 'https://agentbase-cyan.vercel.app',
-      image: agentbaseImg,
-    },
-    {
-      id: 2,
-      title: 'CodeAtlas',
-      description:
-        'An AI powered tool that analyzes any GitHub repository I think of it as "Google Maps for codebases." It detects the tech stack, maps the architecture, and answers questions about the code using GPT-4o in an IDE style layout.',
-      role: 'Solo developer built the GitHub repo analyzer, the GPT-4o Q&A feature, and the 3 panel interface.',
-      tech: ['Python', 'FastAPI', 'React', 'GitHub API', 'GPT-4o'],
-      date: '2025',
-      link: 'https://codeatlas-ten.vercel.app',
-      image: codeatlasImg,
-    },
-    {
-      id: 3,
-      title: 'HookLab Studio',
-      description:
-        'An AI tool that analyzes ad creatives it scores hooks, retention, and calls-to-action using GPT-4o Vision, and transcribes audio with Whisper for multi modal content analysis.',
-      role: 'Solo developer built the analysis engine and integrated GPT-4o Vision and Whisper.',
-      tech: ['Python', 'FastAPI', 'React', 'GPT-4o Vision', 'Whisper'],
-      date: '2025',
-      link: 'https://hooklab-alpha.vercel.app',
-      image: hooklabImg,
-    },
-  ];
+  useEffect(() => {
+    fetch(`${API_URL}/projects`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          setProjects(result.data);
+        } else {
+          setError('Could not load projects.');
+        }
+      })
+      .catch(() => setError('Could not connect to the server.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <main className="section">
       <div className="container">
 
-        {/* Page header*/}
         <div className="accent-line" />
         <h1 className="page-title">Projects</h1>
         <p className="page-subtitle">
           A selection of things I've built. More on the way.
         </p>
 
-        {/*Project cards */}
+        {loading && <p>Loading projects...</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {!loading && !error && projects.length === 0 && <p>No projects to show yet.</p>}
+
         <div className="projects-list">
           {projects.map((project) => (
             <article key={project.id} className="project-card card">
 
               <div className="project-img">
-                <img src={project.image} alt={project.title} />
+                {project.image ? (
+                  <img src={project.image} alt={project.title} />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '180px',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: 'var(--font-head)',
+                      fontSize: '2.5rem',
+                      fontWeight: 800,
+                      color: 'var(--accent)',
+                    }}
+                  >
+                    {project.title ? project.title.charAt(0) : '?'}
+                  </div>
+                )}
               </div>
 
               <div className="project-info">
                 <div className="project-meta">
-                  <span className="project-date">{project.date}</span>
+                  <span className="project-date">
+                    {project.completion
+                      ? new Date(project.completion).toLocaleDateString('en-CA', {
+                          year: 'numeric',
+                          month: 'long',
+                        })
+                      : ''}
+                  </span>
                 </div>
 
                 <h2 className="project-title">{project.title}</h2>
                 <p className="project-desc">{project.description}</p>
-                <p className="project-role"><strong>My Role:</strong> {project.role}</p>
-
-                {/* Tech stack tags */}
-                <div className="project-tech">
-                  {project.tech.map((t) => (
-                    <span key={t} className="tag">{t}</span>
-                  ))}
-                </div>
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-link"
-                >
-                  View Live Site →
-                </a>
               </div>
             </article>
           ))}

@@ -212,3 +212,37 @@ hr.divider {
   border-top: 1px solid var(--border);
   margin: 4rem 0;
 }
+
+/* Admin pages*/
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.admin-list-item h3 {
+  color: var(--white);
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .admin-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
