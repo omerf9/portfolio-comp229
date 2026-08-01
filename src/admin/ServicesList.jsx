@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_URL } from '../api/config';
+import { apiFetch } from '../api/auth';
 
-/**
- * ServicesList — fetches all services from the backend and displays them
- * with Edit and Delete buttons, plus a button to add a new service.
- */
+//ervicesList lists all services from the backend.
+//Delete requires authentication, so requests go through apiFetch,
+//which attaches the Authorization token automatically.
 export default function ServicesList() {
-  const [services, setServices] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch all services when the page loads
   const loadServices = () => {
     setLoading(true);
-    fetch(`${API_URL}/services`)
+    apiFetch('/services')
       .then(res => res.json())
       .then(result => {
         if (result.success) {
-          setServices(result.data);
+          setItems(result.data);
         } else {
           setError('Could not load services.');
         }
@@ -31,18 +29,17 @@ export default function ServicesList() {
     loadServices();
   }, []);
 
-  // Delete a service by id
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/services/${id}`, { method: 'DELETE' });
+      const response = await apiFetch(`/services/${id}`, { method: 'DELETE' });
       const result = await response.json();
 
       if (result.success) {
-        setServices(prev => prev.filter(s => s.id !== id));
+        setItems(prev => prev.filter(i => i.id !== id));
       } else {
-        alert('Could not delete the service.');
+        alert(result.message || 'Could not delete the service.');
       }
     } catch (err) {
       alert('Could not connect to the server.');
@@ -57,6 +54,7 @@ export default function ServicesList() {
         <Link
           to="/admin/services/new"
           className="btn"
+          data-cy="add-service"
           style={{ marginBottom: '1.5rem', display: 'inline-block' }}
         >
           + Add Service
@@ -65,23 +63,23 @@ export default function ServicesList() {
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        {!loading && services.length === 0 && <p>No services yet. Add one above.</p>}
+        {!loading && items.length === 0 && <p>No services yet. Add one above.</p>}
 
         <div className="admin-list">
-          {services.map((service) => (
-            <div key={service.id} className="admin-list-item card">
+          {items.map((item) => (
+            <div key={item.id} className="admin-list-item card">
               <div>
-                <h3>{service.title}</h3>
+                <h3>{item.title}</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-                  {service.description}
+                  {item.description}
                 </p>
               </div>
               <div className="admin-actions">
-                <Link to={`/admin/services/edit/${service.id}`} className="btn btn-outline">
+                <Link to={`/admin/services/edit/${item.id}`} className="btn btn-outline">
                   Edit
                 </Link>
                 <button
-                  onClick={() => handleDelete(service.id)}
+                  onClick={() => handleDelete(item.id)}
                   className="btn"
                   style={{ background: '#dc2626' }}
                 >

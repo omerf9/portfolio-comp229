@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API_URL } from '../api/config';
+import { apiFetch } from '../api/auth';
 
-// ProjectForm handles both adding a new project and editing an existing one.
- // If there's an :id in the URL, it's edit mode. Otherwise, it's add mode.
-
+//ProjectForm handles BOTH adding a new project and editing an existing one.
+//Requests go through apiFetch so the Authorization token is sent with them.
 export default function ProjectForm() {
   const navigate = useNavigate();
-  const { id } = useParams(); // if editing, the URL has an id; if adding, it's undefined
+  const { id } = useParams();
   const isEdit = Boolean(id);
 
-  // Form state one object holding all fields
   const [form, setForm] = useState({
     title: '',
     completion: '',
@@ -21,19 +19,18 @@ export default function ProjectForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  //If editing, fetch the existing project and fill the form
   useEffect(() => {
     if (isEdit) {
-      fetch(`${API_URL}/projects/${id}`)
+      apiFetch(`/projects/${id}`)
         .then(res => res.json())
         .then(result => {
           if (result.success) {
-            const p = result.data;
+            const d = result.data;
             setForm({
-              title:       p.title || '',
-              completion:  p.completion ? p.completion.substring(0, 10) : '',
-              description: p.description || '',
-              image:       p.image || '',
+              title:       d.title || '',
+              completion:  d.completion ? d.completion.substring(0, 10) : '',
+              description: d.description || '',
+              image:       d.image || '',
             });
           }
         })
@@ -41,32 +38,31 @@ export default function ProjectForm() {
     }
   }, [id, isEdit]);
 
-  //Update state when any field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  //Submit: POST for add, PUT for edit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    const payload = { ...form };
+
     try {
-      const response = await fetch(
-        isEdit ? `${API_URL}/projects/${id}` : `${API_URL}/projects`,
+      const response = await apiFetch(
+        isEdit ? `/projects/${id}` : '/projects',
         {
           method: isEdit ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         }
       );
 
       const result = await response.json();
 
       if (result.success) {
-        navigate('/admin/projects'); // go back to the list
+        navigate('/admin/projects');
       } else {
         setError(result.message || 'Something went wrong.');
       }
@@ -87,25 +83,25 @@ export default function ProjectForm() {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Title</label>
-            <input name="title" value={form.title} onChange={handleChange} required />
+            <input name="title" value={form.title} onChange={handleChange} data-cy="project-title" required />
           </div>
 
           <div className="form-group">
             <label>Completion Date</label>
-            <input type="date" name="completion" value={form.completion} onChange={handleChange} />
+            <input type="date" name="completion" value={form.completion} onChange={handleChange} data-cy="project-completion" />
           </div>
 
           <div className="form-group">
             <label>Description</label>
-            <textarea name="description" value={form.description} onChange={handleChange} required />
+            <textarea name="description" value={form.description} onChange={handleChange} data-cy="project-description" required />
           </div>
 
           <div className="form-group">
             <label>Image URL</label>
-            <input name="image" value={form.image} onChange={handleChange} />
+            <input name="image" value={form.image} onChange={handleChange} data-cy="project-image" />
           </div>
 
-          <button type="submit" className="btn" disabled={loading}>
+          <button type="submit" className="btn" data-cy="save-project" disabled={loading}>
             {loading ? 'Saving...' : (isEdit ? 'Update Project' : 'Add Project')}
           </button>
         </form>

@@ -1,13 +1,18 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
-// Page components
+// Public page components
 import Home       from './components/Home';
 import About      from './src/about';
 import Projects   from './src/project';
 import Services   from './src/services';
 import References from './src/references';
 import Contact    from './src/contact';
+
+// Auth components
+import Signin       from './src/admin/Signin';
+import Signup       from './src/admin/Signup';
+import PrivateRoute from './src/admin/PrivateRoute';
 
 // Admin components
 import Dashboard      from './src/admin/Dashboard';
@@ -20,14 +25,13 @@ import ReferenceForm  from './src/admin/ReferenceForm';
 import UsersList      from './src/admin/UsersList';
 import UserForm       from './src/admin/UserForm';
 
-// Shared layout (navbar + logo)
+// Shared layout (navbar and logo)
 import Layout from './components/Layout';
 
-/**
- * MainRouter
- * Defines all client-side routes for the portfolio.
- * The Layout component (navbar) renders on every page above the route content.
- */
+//MainRouter
+//Defines all client side routes.
+//Admin routes are wrapped in PrivateRoute so they require authentication.
+
 const MainRouter = () => {
   return (
     <div>
@@ -41,28 +45,32 @@ const MainRouter = () => {
         <Route path="/references" element={<References />} />
         <Route path="/contact"    element={<Contact />}    />
 
-        {/* Admin dashboard */}
-        <Route path="/admin" element={<Dashboard />} />
+        {/* Auth pages */}
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/signup" element={<Signup />} />
 
-        {/* Admin projects */}
-        <Route path="/admin/projects"            element={<ProjectsList />}   />
-        <Route path="/admin/projects/new"        element={<ProjectForm />}    />
-        <Route path="/admin/projects/edit/:id"   element={<ProjectForm />}    />
+        {/* Protected admin dashboard */}
+        <Route path="/admin" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
 
-        {/* Admin services */}
-        <Route path="/admin/services"            element={<ServicesList />}   />
-        <Route path="/admin/services/new"        element={<ServiceForm />}    />
-        <Route path="/admin/services/edit/:id"   element={<ServiceForm />}    />
+        {/* Protected admin projects */}
+        <Route path="/admin/projects"            element={<PrivateRoute><ProjectsList /></PrivateRoute>} />
+        <Route path="/admin/projects/new"        element={<PrivateRoute><ProjectForm /></PrivateRoute>} />
+        <Route path="/admin/projects/edit/:id"   element={<PrivateRoute><ProjectForm /></PrivateRoute>} />
 
-        {/* Admin references */}
-        <Route path="/admin/references"          element={<ReferencesList />} />
-        <Route path="/admin/references/new"      element={<ReferenceForm />}  />
-        <Route path="/admin/references/edit/:id" element={<ReferenceForm />}  />
+        {/* Protected admin services */}
+        <Route path="/admin/services"            element={<PrivateRoute><ServicesList /></PrivateRoute>} />
+        <Route path="/admin/services/new"        element={<PrivateRoute><ServiceForm /></PrivateRoute>} />
+        <Route path="/admin/services/edit/:id"   element={<PrivateRoute><ServiceForm /></PrivateRoute>} />
 
-        {/* Admin users */}
-        <Route path="/admin/users"               element={<UsersList />}      />
-        <Route path="/admin/users/new"           element={<UserForm />}       />
-        <Route path="/admin/users/edit/:id"      element={<UserForm />}       />
+        {/* Protected admin references */}
+        <Route path="/admin/references"          element={<PrivateRoute><ReferencesList /></PrivateRoute>} />
+        <Route path="/admin/references/new"      element={<PrivateRoute><ReferenceForm /></PrivateRoute>} />
+        <Route path="/admin/references/edit/:id" element={<PrivateRoute><ReferenceForm /></PrivateRoute>} />
+
+        {/* Protected admin users */}
+        <Route path="/admin/users"               element={<PrivateRoute><UsersList /></PrivateRoute>} />
+        <Route path="/admin/users/new"           element={<PrivateRoute><UserForm /></PrivateRoute>} />
+        <Route path="/admin/users/edit/:id"      element={<PrivateRoute><UserForm /></PrivateRoute>} />
       </Routes>
     </div>
   );

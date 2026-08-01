@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_URL } from '../api/config';
+import { apiFetch } from '../api/auth';
 
-/**
- * ReferencesList — fetches all references from the backend and displays them
- * with Edit and Delete buttons, plus a button to add a new reference.
- */
+//ReferencesList lists all references from the backend.
+//Delete requires authentication, so requests go through apiFetch,
+//which attaches the Authorization token automatically.
 export default function ReferencesList() {
-  const [references, setReferences] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch all references when the page loads
   const loadReferences = () => {
     setLoading(true);
-    fetch(`${API_URL}/references`)
+    apiFetch('/references')
       .then(res => res.json())
       .then(result => {
         if (result.success) {
-          setReferences(result.data);
+          setItems(result.data);
         } else {
           setError('Could not load references.');
         }
@@ -31,18 +29,17 @@ export default function ReferencesList() {
     loadReferences();
   }, []);
 
-  // Delete a reference by id
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this reference?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/references/${id}`, { method: 'DELETE' });
+      const response = await apiFetch(`/references/${id}`, { method: 'DELETE' });
       const result = await response.json();
 
       if (result.success) {
-        setReferences(prev => prev.filter(r => r.id !== id));
+        setItems(prev => prev.filter(i => i.id !== id));
       } else {
-        alert('Could not delete the reference.');
+        alert(result.message || 'Could not delete the reference.');
       }
     } catch (err) {
       alert('Could not connect to the server.');
@@ -57,6 +54,7 @@ export default function ReferencesList() {
         <Link
           to="/admin/references/new"
           className="btn"
+          data-cy="add-reference"
           style={{ marginBottom: '1.5rem', display: 'inline-block' }}
         >
           + Add Reference
@@ -65,26 +63,26 @@ export default function ReferencesList() {
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        {!loading && references.length === 0 && <p>No references yet. Add one above.</p>}
+        {!loading && items.length === 0 && <p>No references yet. Add one above.</p>}
 
         <div className="admin-list">
-          {references.map((reference) => (
-            <div key={reference.id} className="admin-list-item card">
+          {items.map((item) => (
+            <div key={item.id} className="admin-list-item card">
               <div>
-                <h3>{reference.name}</h3>
+                <h3>{item.name}</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                  {reference.position} — {reference.company}
+                  {item.position} — {item.company}
                 </p>
                 <p style={{ color: 'var(--muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>
-                  {reference.testimonial}
+                  {item.testimonial}
                 </p>
               </div>
               <div className="admin-actions">
-                <Link to={`/admin/references/edit/${reference.id}`} className="btn btn-outline">
+                <Link to={`/admin/references/edit/${item.id}`} className="btn btn-outline">
                   Edit
                 </Link>
                 <button
-                  onClick={() => handleDelete(reference.id)}
+                  onClick={() => handleDelete(item.id)}
                   className="btn"
                   style={{ background: '#dc2626' }}
                 >

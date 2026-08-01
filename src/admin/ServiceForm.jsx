@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API_URL } from '../api/config';
+import { apiFetch } from '../api/auth';
 
-/**
- * ServiceForm — handles BOTH adding a new service and editing an existing one.
- * If there's an :id in the URL, it's edit mode. Otherwise, it's add mode.
- */
+//ServiceForm handles BOTH adding a new service and editing an existing one.
+//Requests go through apiFetch so the Authorization token is sent with them.
 export default function ServiceForm() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -19,17 +17,16 @@ export default function ServiceForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // If editing, fetch the existing service and fill the form
   useEffect(() => {
     if (isEdit) {
-      fetch(`${API_URL}/services/${id}`)
+      apiFetch(`/services/${id}`)
         .then(res => res.json())
         .then(result => {
           if (result.success) {
-            const s = result.data;
+            const d = result.data;
             setForm({
-              title:       s.title || '',
-              description: s.description || '',
+              title:       d.title || '',
+              description: d.description || '',
             });
           }
         })
@@ -37,25 +34,24 @@ export default function ServiceForm() {
     }
   }, [id, isEdit]);
 
-  // Update state when any field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // Submit: POST for add, PUT for edit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    const payload = { ...form };
+
     try {
-      const response = await fetch(
-        isEdit ? `${API_URL}/services/${id}` : `${API_URL}/services`,
+      const response = await apiFetch(
+        isEdit ? `/services/${id}` : '/services',
         {
           method: isEdit ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -88,15 +84,10 @@ export default function ServiceForm() {
 
           <div className="form-group">
             <label>Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-            />
+            <textarea name="description" value={form.description} onChange={handleChange} required />
           </div>
 
-          <button type="submit" className="btn" disabled={loading}>
+          <button type="submit" className="btn" data-cy="save-service" disabled={loading}>
             {loading ? 'Saving...' : (isEdit ? 'Update Service' : 'Add Service')}
           </button>
         </form>

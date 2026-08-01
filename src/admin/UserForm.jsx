@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API_URL } from '../api/config';
+import { apiFetch } from '../api/auth';
 
-/**
- * UserForm — handles BOTH adding a new user and editing an existing one.
- * If there's an :id in the URL, it's edit mode. Otherwise, it's add mode.
- *
- * Note: the backend never sends passwords back, so on edit the password field
- * starts empty. If it is left empty, the password is not changed.
- */
+//UserForm handles BOTH adding a new user and editing an existing one.
+//Requests go through apiFetch so the Authorization token is sent with them.
 export default function UserForm() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -24,19 +19,18 @@ export default function UserForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // If editing, fetch the existing user and fill the form
   useEffect(() => {
     if (isEdit) {
-      fetch(`${API_URL}/users/${id}`)
+      apiFetch(`/users/${id}`)
         .then(res => res.json())
         .then(result => {
           if (result.success) {
-            const u = result.data;
+            const d = result.data;
             setForm({
-              firstname: u.firstname || '',
-              lastname:  u.lastname || '',
-              email:     u.email || '',
-              password:  '', // never pre-filled
+              firstname: d.firstname || '',
+              lastname:  d.lastname || '',
+              email:     d.email || '',
+              password:  '',
             });
           }
         })
@@ -44,30 +38,28 @@ export default function UserForm() {
     }
   }, [id, isEdit]);
 
-  // Update state when any field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // Submit: POST for add, PUT for edit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // On edit, only send the password if the user actually typed a new one
     const payload = { ...form };
+
+    // On edit, only send the password if a new one was typed
     if (isEdit && !payload.password) {
       delete payload.password;
     }
 
     try {
-      const response = await fetch(
-        isEdit ? `${API_URL}/users/${id}` : `${API_URL}/users`,
+      const response = await apiFetch(
+        isEdit ? `/users/${id}` : '/users',
         {
           method: isEdit ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         }
       );
@@ -106,29 +98,17 @@ export default function UserForm() {
 
           <div className="form-group">
             <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
+            <input type="email" name="email" value={form.email} onChange={handleChange} required />
           </div>
 
           <div className="form-group">
             <label>
               Password {isEdit && <span style={{ fontWeight: 400 }}>(leave blank to keep current)</span>}
             </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required={!isEdit}
-            />
+            <input type="password" name="password" value={form.password} onChange={handleChange} required={!isEdit} />
           </div>
 
-          <button type="submit" className="btn" disabled={loading}>
+          <button type="submit" className="btn" data-cy="save-user" disabled={loading}>
             {loading ? 'Saving...' : (isEdit ? 'Update User' : 'Add User')}
           </button>
         </form>

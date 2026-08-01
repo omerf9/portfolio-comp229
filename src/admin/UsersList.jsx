@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_URL } from '../api/config';
+import { apiFetch } from '../api/auth';
 
-/**
- * UsersList — fetches all users from the backend and displays them
- * with Edit and Delete buttons, plus a button to add a new user.
- * Note: passwords are never returned by the backend, so they are not shown here.
- */
+//UsersList lists all users from the backend.
+//Delete requires authentication, so requests go through apiFetch,
+//which attaches the Authorization token automatically.
 export default function UsersList() {
-  const [users, setUsers] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch all users when the page loads
   const loadUsers = () => {
     setLoading(true);
-    fetch(`${API_URL}/users`)
+    apiFetch('/users')
       .then(res => res.json())
       .then(result => {
         if (result.success) {
-          setUsers(result.data);
+          setItems(result.data);
         } else {
           setError('Could not load users.');
         }
@@ -32,18 +29,17 @@ export default function UsersList() {
     loadUsers();
   }, []);
 
-  // Delete a user by id
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+      const response = await apiFetch(`/users/${id}`, { method: 'DELETE' });
       const result = await response.json();
 
       if (result.success) {
-        setUsers(prev => prev.filter(u => u.id !== id));
+        setItems(prev => prev.filter(i => i.id !== id));
       } else {
-        alert('Could not delete the user.');
+        alert(result.message || 'Could not delete the user.');
       }
     } catch (err) {
       alert('Could not connect to the server.');
@@ -58,6 +54,7 @@ export default function UsersList() {
         <Link
           to="/admin/users/new"
           className="btn"
+          data-cy="add-user"
           style={{ marginBottom: '1.5rem', display: 'inline-block' }}
         >
           + Add User
@@ -66,23 +63,23 @@ export default function UsersList() {
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        {!loading && users.length === 0 && <p>No users yet. Add one above.</p>}
+        {!loading && items.length === 0 && <p>No users yet. Add one above.</p>}
 
         <div className="admin-list">
-          {users.map((user) => (
-            <div key={user.id} className="admin-list-item card">
+          {items.map((item) => (
+            <div key={item.id} className="admin-list-item card">
               <div>
-                <h3>{user.firstname} {user.lastname}</h3>
+                <h3>{item.firstname} {item.lastname}</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-                  {user.email}
+                  {item.email}
                 </p>
               </div>
               <div className="admin-actions">
-                <Link to={`/admin/users/edit/${user.id}`} className="btn btn-outline">
+                <Link to={`/admin/users/edit/${item.id}`} className="btn btn-outline">
                   Edit
                 </Link>
                 <button
-                  onClick={() => handleDelete(user.id)}
+                  onClick={() => handleDelete(item.id)}
                   className="btn"
                   style={{ background: '#dc2626' }}
                 >
